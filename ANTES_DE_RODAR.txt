@@ -1,0 +1,19 @@
+PRIMEIRO:
+# na raiz do projeto
+.venv\Scripts\activate
+
+ajuda a evitar erros de instalação:
+python -m pip install -U pip setuptools
+
+muitas libs distribuem wheels e a instalação fica mais rápida/estável:
+python -m pip install -U pip setuptools wheel
+
+python -m pip install -r requirements.txt
+
+python -m pip install --upgrade pip
+python -m pip install streamlit aiohttp python-dotenv
+
+
+
+PARA RODAR O APP.py NO TERMINAL
+python -m streamlit run app.py
