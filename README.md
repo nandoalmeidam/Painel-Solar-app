@@ -9,6 +9,8 @@ Projeto GOODWE – Passo a passo para rodar localmente
 - Git (opcional)
 - No Windows: PowerShell
 
+  
+
 1) Criar / ativar o ambiente virtual (na raiz do projeto)
 ---------------------------------------------------------
 Windows (PowerShell):
@@ -27,11 +29,15 @@ macOS / Linux:
     which python
     which pip
 
+
+
 2) Atualizar o instalador e instalar dependências
 -------------------------------------------------
 Sempre que ativar o venv pela 1ª vez:
 
     ler ANTES_DE_RODAR.txt
+
+
 
 
 3) Configurar a chave do Gemini (.env)
@@ -42,6 +48,8 @@ Crie um arquivo chamado **.env** na raiz do projeto com a linha abaixo:
 
 (Dica: sem aspas. Se preferir usar aspas, também funciona.)
 
+
+
 4) Rodar a aplicação
 --------------------
 Ainda com o venv ativo, na raiz do projeto:
@@ -51,6 +59,8 @@ Ainda com o venv ativo, na raiz do projeto:
     streamlit run app.py
 
 O Streamlit abrirá no navegador. Para parar, use CTRL+C no terminal.
+
+
 
 5) Estrutura esperada (simplificada)
 ------------------------------------
@@ -63,6 +73,8 @@ O Streamlit abrirá no navegador. Para parar, use CTRL+C no terminal.
 ├─ .env
 └─ sems_portal_api_master/
    └─ sems_portal_api/ (código da lib SEMS)
+
+
 
 6) Problemas comuns e soluções rápidas
 --------------------------------------
@@ -84,6 +96,8 @@ O Streamlit abrirá no navegador. Para parar, use CTRL+C no terminal.
 • Tela “Goodwe Assistent - MVP” não carrega dados:
     → Preencha Conta (SEMS), Senha, Região e o Power Station ID antes de clicar “Carregar dados da planta”.
     → O app valida e mostra aviso caso algo esteja faltando.
+
+
 
 7) Rodar novamente (resumo)
 ---------------------------
