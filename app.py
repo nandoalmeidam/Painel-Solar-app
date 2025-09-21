@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as pl
-from main import ia   # Importa a função ia do seu arquivo main.py
+from main import ia   # Importa a função ia do seu main.py
 
 ##############################################################
 # PARA O CLIMA:
@@ -319,7 +319,7 @@ with tab3:
                                       format_func=lambda i: options[i], 
                                       index=min(ss.wx_selected_idx, len(options)-1))
 
-    # 4) Linha de ações (mesma “vibe” da Tab1: botão principal à esquerda)
+    # 4) Linha de ações (mesma da Tab1: botão principal à esquerda)
     a1, a2 = st.columns([2, 1])
     with a1:
         consultar_clicked = st.button("Consultar previsão")
