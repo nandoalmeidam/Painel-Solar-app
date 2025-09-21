@@ -85,7 +85,7 @@ _DIAS_PT = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Doming
 
 # previsão da semana (OPÇÃO B – lista Markdown, a partir de amanhã)
 def _previsao_semana(msg: str) -> str:
-    lugar = _resolver_lugar(msg)  # sua função que resolve "São Paulo, Brasil" etc.
+    lugar = _resolver_lugar(msg)  # função que resolve "São Paulo, Brasil" etc.
     hourly, daily = consultar_api(lugar)
     if daily is None or daily.empty:
         return "Não consegui obter a previsão da semana agora."
