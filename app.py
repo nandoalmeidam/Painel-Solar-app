@@ -136,8 +136,8 @@ with tab1:
     # estado da sessão (defaults)
     ss = st.session_state
     ss.setdefault("region", "eu")
-    ss.setdefault("account", "demo@goodwe.com")
-    ss.setdefault("password", "GoodweSems123!@#")
+    ss.setdefault("account", "")
+    ss.setdefault("password", "**********")
     ss.setdefault("plant_id", "")
     ss.setdefault("token", None)
     ss.setdefault("plant_data", None)
