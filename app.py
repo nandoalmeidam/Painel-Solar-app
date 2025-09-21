@@ -377,39 +377,61 @@ with tab3:
 
         # --- Gráficos (matplotlib) ---
         import matplotlib.pyplot as plt
+        import numpy as np
 
-        # 1) Temperatura horária (hoje)
-        fig1 = plt.figure(figsize=(8, 3.5))
-        x = hourly["date"].dt.strftime("%H:%M")
-        y = hourly["temperature_2m"]
-        plt.plot(x, y, marker=".", linewidth=1.5)
-        plt.title(f"Temperatura — hoje — {lugar['nome']}")
-        plt.xlabel("Hora"); plt.ylabel("°C"); plt.xticks(rotation=45); plt.grid(True, linestyle="--", alpha=0.4)
-        st.pyplot(fig1, clear_figure=True)
+        st.subheader("Gráficos")
+        
+        # Tamanho reduzido dos gráficos
+        FIG_w, FIG_H, DPI = 6, 2.8, 120
 
-        # 2) Mín/Máx da semana
-        if {"temperature_2m_min","temperature_2m_max"}.issubset(daily.columns):
-            fig2 = plt.figure(figsize=(8, 3.5))
-            xd = daily["date"].dt.strftime("%d/%m")
-            plt.plot(xd, daily["temperature_2m_min"], marker="o", label="Mín")
-            plt.plot(xd, daily["temperature_2m_max"], marker="o", label="Máx")
-            plt.fill_between(xd, daily["temperature_2m_min"], daily["temperature_2m_max"], alpha=0.15)
-            plt.title(f"Temperaturas — semana — {lugar['nome']}")
-            plt.xlabel("Data"); plt.ylabel("°C"); plt.xticks(rotation=0); plt.legend(); plt.grid(True, linestyle="--", alpha=0.4)
-            st.pyplot(fig2, clear_figure=True)
+        def grafico_temp_horaria():
+            fig, ax = plt.subplots(figsize=(7, 3))
+            x = hourly["date"].dt.strftime("%Hh")
+            y = hourly["temperature_2m"]
+            ax.plot(x, y, marker=".", linewidth=1.6)
+            ax.set_title(f"Temperatura — hoje — {lugar['nome']}")
+            ax.set_xlabel("Hora"); ax.set_ylabel("°C")
+            # reduz número de rótulos para não poluir
+            step = max(1, len(x)//8)
+            ax.set_xticks(np.arange(0, len(x), step))
+            ax.grid(True, linestyle="--", alpha=0.35)
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
 
-        # 3) Precipitação da semana
-        if "precipitation_sum" in daily.columns:
-            fig3 = plt.figure(figsize=(8, 3.5))
-            xd = daily["date"].dt.strftime("%d/%m")
-            yb = daily["precipitation_sum"].clip(lower=0)
-            plt.bar(xd, yb)
-            plt.ylim(0, max(5.0, float(yb.max()) + 2.0))
-            plt.title(f"Precipitação — semana — {lugar['nome']}")
-            plt.xlabel("Data"); plt.ylabel("mm"); plt.grid(axis='y', linestyle='--', alpha=0.5)
-            st.pyplot(fig3, clear_figure=True)
-    else:
-        st.info("Escolha um lugar e clique em **Consultar previsão**.")
+        def grafico_semana_min_max():
+            if {"temperature_2m_min","temperature_2m_max"}.issubset(daily.columns):
+                fig, ax = plt.subplots(figsize=(7, 3))
+                xd = daily["date"].dt.strftime("%d/%m")
+                ax.plot(xd, daily["temperature_2m_min"], marker="o", label="Mín")
+                ax.plot(xd, daily["temperature_2m_max"], marker="o", label="Máx")
+                ax.fill_between(xd, daily["temperature_2m_min"], daily["temperature_2m_max"], alpha=0.15)
+                ax.set_title(f"Temperaturas — semana — {lugar['nome']}")
+                ax.set_xlabel("Data"); ax.set_ylabel("°C"); ax.legend(loc="upper left")
+                ax.grid(True, linestyle="--", alpha=0.35)
+                plt.tight_layout()
+                st.pyplot(fig, clear_figure=True)
+
+        def grafico_semana_chuva():
+            if "precipitation_sum" in daily.columns:
+                fig, ax = plt.subplots(figsize=(7, 3))
+                xd = daily["date"].dt.strftime("%d/%m")
+                yb = daily["precipitation_sum"].clip(lower=0)
+                ax.bar(xd, yb)
+                ax.set_ylim(0, max(5.0, float(yb.max()) + 2.0))
+                ax.set_title(f"Precipitação — semana — {lugar['nome']}")
+                ax.set_xlabel("Data"); ax.set_ylabel("mm")
+                ax.grid(axis="y", linestyle="--", alpha=0.5)
+                plt.tight_layout()
+                st.pyplot(fig, clear_figure=True)
+
+        # --- layout ---
+        c1, c2 = st.columns(2, gap="medium")
+        with c1: grafico_temp_horaria()
+        with c2: grafico_semana_min_max()
+
+        c3, c4 = st.columns(2, gap="medium")
+        with c3: grafico_semana_chuva()
+        with c4: st.empty()
 
 
 
@@ -417,7 +439,7 @@ with tab3:
 with tab4:
     st.subheader("SOLAR I.A.")
     st.markdown(
-        "<h3 style='text-align: center;'>Faça a sua pergunta: .</h3>",
+        "<h3 style='text-align: center;'>Faça a sua pergunta: </h3>",
         unsafe_allow_html=True
     )
 
