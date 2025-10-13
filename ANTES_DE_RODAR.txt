@@ -1,5 +1,8 @@
 PRIMEIRO:
 # na raiz do projeto
+# Criar venv
+python -m venv .venv
+# Acessar venv
 .venv\Scripts\activate
 
 ajuda a evitar erros de instalação:
