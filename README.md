@@ -68,18 +68,16 @@ O Streamlit abrirá no navegador. Para parar, use CTRL+C no terminal.
 ├─ app.py
 ├─ Clima.py
 ├─ main.py
-├─ portal_api.py
 ├─ requirements.txt
 ├─ .env
-└─ sems_portal_api_master/
-   └─ sems_portal_api/ (código da lib SEMS)
+
 
 
 
 6) Problemas comuns e soluções rápidas
 --------------------------------------
 • “No API_KEY or ADC found” ao perguntar algo na aba de I.A.:
-    → Verifique o arquivo .env e a variável GEMINI_API_KEY.
+    → Verifique o arquivo .env e a variável GEMINI_API_KEY (mudança também de versão).
     → Reinicie o app após ajustar.
 
 • Pip/Streamlit aponta para outro venv antigo:
@@ -93,9 +91,6 @@ O Streamlit abrirá no navegador. Para parar, use CTRL+C no terminal.
 • Pastas com acentos/espaços no caminho (ex.: “Área de Trabalho”) podem causar bugs em alguns ambientes:
     → Se der problema, mova o projeto para um caminho simples (ex.: C:\dev\goodwe\).
 
-• Tela “Goodwe Assistent - MVP” não carrega dados:
-    → Preencha Conta (SEMS), Senha, Região e o Power Station ID antes de clicar “Carregar dados da planta”.
-    → O app valida e mostra aviso caso algo esteja faltando.
 
 
 
