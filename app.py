@@ -46,61 +46,6 @@ def _token_from_auth(auth):
                 return cur
     return None
 
-#Faz login e tenta listar plantas (forks usam nomes diferentes).
-async def list_plants(region: str, account: str, password: str):
-    set_region(region)
-    async with aiohttp.ClientSession() as session:
-        auth = await login_to_sems(session, account, password)
-        token = login_response_to_token(auth)
-
-        candidates = [
-            (sems_plant_details, "get_station_list"),
-            (sems_plant_details, "get_plant_list"),
-            (sems_plant_details, "get_station_list_by_user"),
-            (sems_charts,        "get_station_list"),
-            (sems_charts,        "get_plant_list"),
-        ]
-
-        # Essa função tenta pegar o mesmo conteúdo (id, nome, capacidade) mesmo que as chaves mudem.
-        def push(plants, d):
-            pid  = d.get("powerStationId") or d.get("powerstation_id") or d.get("station_id") or d.get("id")
-            name = d.get("stationname")    or d.get("plant_name")      or d.get("name")
-            cap  = d.get("capacity")       or d.get("plant_capacity")
-            if pid and name:
-                plants.append({"name": name, "power_station_id": pid, "capacity": cap})
-
-        # para cada candidato, getattr tenta obter a função pelo nome; se não existir, volta None
-        for mod, fname in candidates:
-            fn = getattr(mod, fname, None)
-            if fn and inspect.iscoroutinefunction(fn):
-                try:
-                    resp = await fn(session=session, token=token)
-                except TypeError:
-                    continue
-                # Normaliza a resposta
-                plants = []
-                if isinstance(resp, dict):
-                    for v in resp.values():
-                        if isinstance(v, list):
-                            for it in v:
-                                if isinstance(it, dict): push(plants, it)
-                elif isinstance(resp, list):
-                    for it in resp:
-                        if isinstance(it, dict): push(plants, it)
-                if plants:
-                    return plants, token
-        # se nenhum candidato funcionou, retorna lista vazia (mas com o token do login, que já foi obtido)
-        return [], token
-
-# Carrega o JSON consolidado de uma planta específica.
-async def load_collated(region: str, account: str, password: str, plant_id: str):
-    set_region(region)
-    async with aiohttp.ClientSession() as session:
-        auth = await login_to_sems(session, account, password)
-        token = login_response_to_token(auth)
-
-        data = await get_collated_plant_details(session, power_station_id=plant_id, token=token)
-        return data, token
 ##############################################################
 
 # Configurações da página
@@ -122,116 +67,11 @@ def do_logout(clear_creds: bool = False):
 
 ##############################################################    
 # Cria abas no app
-tab1, tab2, tab3, tab4 = st.tabs([
-    "Goodwe Assistant - MVP", 
+tab2, tab3, tab4 = st.tabs([
     "Preferencias", 
     "Acesso de dados", 
     "Solar I.A."
 ])
-
-# ---------------- TAB 1 ----------------
-with tab1:
-    st.title("Goodwe Assistant - MVP")
-
-    # estado da sessão (defaults)
-    ss = st.session_state
-    ss.setdefault("region", "eu")
-    ss.setdefault("account", "")
-    ss.setdefault("password", "**********")
-    ss.setdefault("plant_id", "")
-    ss.setdefault("token", None)
-    ss.setdefault("plant_data", None)
-
-    # Credenciais + região (inputs para conta, senha e regiao)
-    c1, c2, c3 = st.columns([2, 2, 1])
-
-    with c1:
-        ss.account = st.text_input("Conta (SEMS)", value=ss.account)
-
-    with c2:
-        ss.password = st.text_input("Senha", type="password", value=ss.password)
-
-    with c3:
-        ss.region = st.selectbox(
-            "Região", ["eu", "na", "au"],
-            index=["eu", "na", "au"].index(ss.region)
-        )
-
-    # campo do ID + botão  para colar o ID(fora do form)
-    ss.plant_id = st.text_input(
-        "Cole abaixo o seu ID (ex: 6ef62eb2-7959-4c49-ad0a-0ce75565023a)",
-        value=ss.plant_id,
-        key="plant_id_input",
-    )
-
-    # botão que dispara a chamada da API
-    # (Carregar à esquerda | Logout à direita, na mesma linha)
-    col_load, col_logout = st.columns([3, 1])
-    with col_load:
-        load_clicked = st.button("Carregar dados da planta")
-    with col_logout:
-        logout_clicked = st.button("Logout", type="secondary")
-    if logout_clicked:
-        do_logout(False)
-
-    if load_clicked:
-        if not ss.plant_id.strip():
-            st.error("Cole o Power Station ID primeiro.")
-        else:
-            try:
-                with st.spinner("Carregando dados da planta..."):
-                    data, token = asyncio.run(
-                        load_collated(ss.region, ss.account, ss.password, ss.plant_id.strip())
-                    )
-                # validação simples
-                if not isinstance(data, dict) or "powerPlant" not in data:
-                    st.error("Não foi possível carregar os detalhes. Verifique login, região e o ID.")
-                else:
-                    ss.plant_data, ss.token = data, token
-                    st.success("Dados carregados com sucesso.")
-            except Exception as e:
-                st.error(f"Erro ao carregar dados: {e}")
-
-    # Exibição dos dados
-    plant_data = ss.get("plant_data")
-
-    if isinstance(plant_data, dict) and plant_data:
-        info = ((plant_data.get("powerPlant") or {}).get("info") or {})
-
-        # helper para formatar números
-        def fmt(v, nd=1, sep=False):
-            try:
-                x = float(v)
-                return f"{x:,.{nd}f}" if sep else f"{x:.{nd}f}"
-            except Exception:
-                return "—"
-
-        # mostra header com nome/ID, 4 métricas em cards
-        st.markdown(
-            f"**{info.get('stationname','(sem nome)')}** — "
-            f"ID: `{info.get('powerstation_id','?')}`"
-        )
-
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Geração hoje (kWh)", fmt(info.get("generationToday"), 1))
-        c2.metric("Live (kW)",          fmt(info.get("generationLive"),   2))
-        c3.metric("Mês (kWh)",          fmt(info.get("monthGeneration"),  1))
-        c4.metric("SOC bateria (%)",    fmt(info.get("soc"),              0))
-
-        # Inversores em tabela
-        inverters = (plant_data.get("powerPlant") or {}).get("inverters") or []
-        if inverters:
-            import pandas as pd
-            df = pd.DataFrame(inverters).rename(
-                columns={"name": "SN", "model": "Modelo", "innerTemp": "Temp interna (°C)"}
-            )
-            st.subheader("Inversores")
-            st.dataframe(df[["SN", "Modelo", "Temp interna (°C)"]], use_container_width=True)
-        else:
-            st.info("Nenhum inversor retornado pela API.")
-    else:
-        # qdo ainda não carregou nada, não mostra nada (só mantém o layout limpo)
-        st.write("")  # ou st.empty()
 
 # ---------------- TAB 2 ----------------
 with tab2:
