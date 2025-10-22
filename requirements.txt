@@ -7,4 +7,3 @@ numpy
 pandas
 streamlit
 aiohttp>=3.10,<3.11
--e ./sems_portal_api_master
